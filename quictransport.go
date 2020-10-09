@@ -7,15 +7,14 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 	"errors"
+	"fmt"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/pion/dtls/v2"
-	"github.com/pion/logging"
 	"github.com/pion/quic"
 	"github.com/pion/webrtc/v2/internal/mux"
-	"github.com/pion/webrtc/v2/pkg/rtcerr"
 )
 
 // QUICTransport is a specialization of QuicTransportBase focused on
@@ -27,7 +26,6 @@ type QUICTransport struct {
 
 	iceTransport *ICETransport
 	certificates []Certificate
-	log logging.LeveledLogger
 }
 
 // NewQUICTransport creates a new QUICTransport.
@@ -45,14 +43,14 @@ func  NewQUICTransport(transport *ICETransport, certificates []Certificate) (*QU
 		now := time.Now()
 		for _, x509Cert := range certificates {
 			if !x509Cert.Expires().IsZero() && now.After(x509Cert.Expires()) {
-				return nil, &rtcerr.InvalidAccessError{Err: ErrCertificateExpired}
+				return nil, errors.New("x509Cert expired")
 			}
 			t.certificates = append(t.certificates, x509Cert)
 		}
 	} else {
 		sk, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 		if err != nil {
-			return nil, &rtcerr.UnknownError{Err: err}
+			return nil, errors.New("unknown cert")
 		}
 		certificate, err := GenerateCertificate(sk)
 		if err != nil {
@@ -125,7 +123,7 @@ func (t *QUICTransport) Start(remoteParameters QUICParameters) error {
 			return err
 		}
 	} else {
-		t.log.Errorf("Warning: Certificate not checked")
+		fmt.Println("Warning: Certificate not checked")
 	}
 
 	return nil

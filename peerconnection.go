@@ -479,15 +479,9 @@ func (pc *PeerConnection) CreateOffer(options *OfferOptions) (SessionDescription
 }
 
 func (pc *PeerConnection) createICEGatherer() (*ICEGatherer, error) {
-	g, err := pc.api.NewICEGatherer(ICEGatherOptions{
-		ICEServers:      pc.configuration.getICEServers(),
-		ICEGatherPolicy: pc.configuration.ICETransportPolicy,
-	})
-	if err != nil {
-		return nil, err
-	}
 
-	return g, nil
+
+	return nil, nil
 }
 
 // Update the PeerConnectionState given the state of relevant transports

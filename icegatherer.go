@@ -24,13 +24,13 @@ type ICEGatherer struct {
 	onLocalCandidateHdlr func(candidate *ICECandidate)
 	onStateChangeHdlr    func(state ICEGathererState)
 
-	api *API
+	settingEngine *SettingEngine
 }
 
 // NewICEGatherer creates a new NewICEGatherer.
 // This constructor is part of the ORTC API. It is not
 // meant to be used together with the basic WebRTC API.
-func (api *API) NewICEGatherer(opts ICEGatherOptions) (*ICEGatherer, error) {
+func NewICEGatherer(opts ICEGatherOptions, engine *SettingEngine) (*ICEGatherer, error) {
 	var validatedServers []*ice.URL
 	if len(opts.ICEServers) > 0 {
 		for _, server := range opts.ICEServers {
@@ -46,7 +46,7 @@ func (api *API) NewICEGatherer(opts ICEGatherOptions) (*ICEGatherer, error) {
 		state:            ICEGathererStateNew,
 		gatherPolicy:     opts.ICEGatherPolicy,
 		validatedServers: validatedServers,
-		api:              api,
+		settingEngine:              engine,
 	}, nil
 }
 
@@ -59,14 +59,14 @@ func (g *ICEGatherer) createAgent() error {
 	}
 
 	candidateTypes := []ice.CandidateType{}
-	if g.api.settingEngine.candidates.ICELite {
+	if g.settingEngine.candidates.ICELite {
 		candidateTypes = append(candidateTypes, ice.CandidateTypeHost)
 	} else if g.gatherPolicy == ICETransportPolicyRelay {
 		candidateTypes = append(candidateTypes, ice.CandidateTypeRelay)
 	}
 
 	var nat1To1CandiTyp ice.CandidateType
-	switch g.api.settingEngine.candidates.NAT1To1IPCandidateType {
+	switch g.settingEngine.candidates.NAT1To1IPCandidateType {
 	case ICECandidateTypeHost:
 		nat1To1CandiTyp = ice.CandidateTypeHost
 	case ICECandidateTypeSrflx:
@@ -76,36 +76,36 @@ func (g *ICEGatherer) createAgent() error {
 	}
 
 	var multicastDNSMode ice.MulticastDNSMode
-	if g.api.settingEngine.candidates.GenerateMulticastDNSCandidates {
+	if g.settingEngine.candidates.GenerateMulticastDNSCandidates {
 		multicastDNSMode = ice.MulticastDNSModeQueryAndGather
 	}
 
 	config := &ice.AgentConfig{
-		Trickle:                   g.api.settingEngine.candidates.ICETrickle,
-		Lite:                      g.api.settingEngine.candidates.ICELite,
+		Trickle:                   g.settingEngine.candidates.ICETrickle,
+		Lite:                      g.settingEngine.candidates.ICELite,
 		Urls:                      g.validatedServers,
-		PortMin:                   g.api.settingEngine.ephemeralUDP.PortMin,
-		PortMax:                   g.api.settingEngine.ephemeralUDP.PortMax,
-		ConnectionTimeout:         g.api.settingEngine.timeout.ICEConnection,
-		KeepaliveInterval:         g.api.settingEngine.timeout.ICEKeepalive,
-		LoggerFactory:             g.api.settingEngine.LoggerFactory,
+		PortMin:                   g.settingEngine.ephemeralUDP.PortMin,
+		PortMax:                   g.settingEngine.ephemeralUDP.PortMax,
+		ConnectionTimeout:         g.settingEngine.timeout.ICEConnection,
+		KeepaliveInterval:         g.settingEngine.timeout.ICEKeepalive,
+		LoggerFactory:             g.settingEngine.LoggerFactory,
 		CandidateTypes:            candidateTypes,
-		CandidateSelectionTimeout: g.api.settingEngine.timeout.ICECandidateSelectionTimeout,
-		HostAcceptanceMinWait:     g.api.settingEngine.timeout.ICEHostAcceptanceMinWait,
-		SrflxAcceptanceMinWait:    g.api.settingEngine.timeout.ICESrflxAcceptanceMinWait,
-		PrflxAcceptanceMinWait:    g.api.settingEngine.timeout.ICEPrflxAcceptanceMinWait,
-		RelayAcceptanceMinWait:    g.api.settingEngine.timeout.ICERelayAcceptanceMinWait,
-		InterfaceFilter:           g.api.settingEngine.candidates.InterfaceFilter,
-		NAT1To1IPs:                g.api.settingEngine.candidates.NAT1To1IPs,
+		CandidateSelectionTimeout: g.settingEngine.timeout.ICECandidateSelectionTimeout,
+		HostAcceptanceMinWait:     g.settingEngine.timeout.ICEHostAcceptanceMinWait,
+		SrflxAcceptanceMinWait:    g.settingEngine.timeout.ICESrflxAcceptanceMinWait,
+		PrflxAcceptanceMinWait:    g.settingEngine.timeout.ICEPrflxAcceptanceMinWait,
+		RelayAcceptanceMinWait:    g.settingEngine.timeout.ICERelayAcceptanceMinWait,
+		InterfaceFilter:           g.settingEngine.candidates.InterfaceFilter,
+		NAT1To1IPs:                g.settingEngine.candidates.NAT1To1IPs,
 		NAT1To1IPCandidateType:    nat1To1CandiTyp,
-		Net:                       g.api.settingEngine.vnet,
+		Net:                       g.settingEngine.vnet,
 		MulticastDNSMode:          multicastDNSMode,
-		MulticastDNSHostName:      g.api.settingEngine.candidates.MulticastDNSHostName,
-		LocalUfrag:                g.api.settingEngine.candidates.UsernameFragment,
-		LocalPwd:                  g.api.settingEngine.candidates.Password,
+		MulticastDNSHostName:      g.settingEngine.candidates.MulticastDNSHostName,
+		LocalUfrag:                g.settingEngine.candidates.UsernameFragment,
+		LocalPwd:                  g.settingEngine.candidates.Password,
 	}
 
-	requestedNetworkTypes := g.api.settingEngine.candidates.ICENetworkTypes
+	requestedNetworkTypes := g.settingEngine.candidates.ICENetworkTypes
 	if len(requestedNetworkTypes) == 0 {
 		requestedNetworkTypes = supportedNetworkTypes()
 	}
@@ -120,7 +120,7 @@ func (g *ICEGatherer) createAgent() error {
 	}
 
 	g.agent = agent
-	if !g.api.settingEngine.candidates.ICETrickle {
+	if !g.settingEngine.candidates.ICETrickle {
 		g.state = ICEGathererStateComplete
 	}
 
@@ -139,7 +139,7 @@ func (g *ICEGatherer) Gather() error {
 		onLocalCandidateHdlr = func(*ICECandidate) {}
 	}
 
-	isTrickle := g.api.settingEngine.candidates.ICETrickle
+	isTrickle := g.settingEngine.candidates.ICETrickle
 	agent := g.agent
 	g.lock.Unlock()
 

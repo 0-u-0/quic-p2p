@@ -19,7 +19,6 @@ func main() {
 	// Everything below is the Pion WebRTC (ORTC) API! Thanks for using it ❤️.
 
 	// Create an API object
-	api := webrtc.NewAPI()
 
 	// Prepare ICE gathering options
 	iceOptions := webrtc.ICEGatherOptions{
@@ -29,7 +28,9 @@ func main() {
 	}
 
 	// Create the ICE gatherer
-	gatherer, err := api.NewICEGatherer(iceOptions)
+	setting := &webrtc.SettingEngine{}
+
+	gatherer, err := webrtc.NewICEGatherer(iceOptions, setting)
 	if err != nil {
 		panic(err)
 	}

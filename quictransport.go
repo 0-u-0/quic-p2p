@@ -12,7 +12,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pion/dtls/v2"
 	"github.com/pion/quic"
 	"github.com/pion/webrtc/v2/internal/mux"
 )
@@ -131,12 +130,12 @@ func (t *QUICTransport) Start(remoteParameters QUICParameters) error {
 
 func (t *QUICTransport) validateFingerPrint(remoteParameters QUICParameters, remoteCert *x509.Certificate) error {
 	for _, fp := range remoteParameters.Fingerprints {
-		hashAlgo, err := dtls.HashAlgorithmString(fp.Algorithm)
+		hashAlgo, err := HashAlgorithmString(fp.Algorithm)
 		if err != nil {
 			return err
 		}
 
-		remoteValue, err := dtls.Fingerprint(remoteCert, hashAlgo)
+		remoteValue, err := Fingerprint(remoteCert, hashAlgo)
 		if err != nil {
 			return err
 		}

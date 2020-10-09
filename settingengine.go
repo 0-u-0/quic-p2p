@@ -3,11 +3,9 @@
 package webrtc
 
 import (
-	"errors"
 	"time"
 
 	"github.com/pion/ice"
-	"github.com/pion/logging"
 	"github.com/pion/transport/vnet"
 )
 
@@ -43,10 +41,8 @@ type SettingEngine struct {
 		UsernameFragment               string
 		Password                       string
 	}
-	answeringDTLSRole                         DTLSRole
 	disableCertificateFingerprintVerification bool
 	vnet                                      *vnet.Net
-	LoggerFactory                             logging.LoggerFactory
 }
 
 // DetachDataChannels enables detaching data channels. When enabled
@@ -152,23 +148,6 @@ func (e *SettingEngine) SetInterfaceFilter(filter func(string) bool) {
 func (e *SettingEngine) SetNAT1To1IPs(ips []string, candidateType ICECandidateType) {
 	e.candidates.NAT1To1IPs = ips
 	e.candidates.NAT1To1IPCandidateType = candidateType
-}
-
-// SetAnsweringDTLSRole sets the DTLS role that is selected when offering
-// The DTLS role controls if the WebRTC Client as a client or server. This
-// may be useful when interacting with non-compliant clients or debugging issues.
-//
-// DTLSRoleActive:
-// 		Act as DTLS Client, send the ClientHello and starts the handshake
-// DTLSRolePassive:
-// 		Act as DTLS Server, wait for ClientHello
-func (e *SettingEngine) SetAnsweringDTLSRole(role DTLSRole) error {
-	if role != DTLSRoleClient && role != DTLSRoleServer {
-		return errors.New("SetAnsweringDTLSRole must DTLSRoleClient or DTLSRoleServer")
-	}
-
-	e.answeringDTLSRole = role
-	return nil
 }
 
 // SetVNet sets the VNet instance that is passed to pion/ice

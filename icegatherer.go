@@ -88,7 +88,6 @@ func (g *ICEGatherer) createAgent() error {
 		PortMax:                   g.settingEngine.ephemeralUDP.PortMax,
 		ConnectionTimeout:         g.settingEngine.timeout.ICEConnection,
 		KeepaliveInterval:         g.settingEngine.timeout.ICEKeepalive,
-		LoggerFactory:             g.settingEngine.LoggerFactory,
 		CandidateTypes:            candidateTypes,
 		CandidateSelectionTimeout: g.settingEngine.timeout.ICECandidateSelectionTimeout,
 		HostAcceptanceMinWait:     g.settingEngine.timeout.ICEHostAcceptanceMinWait,

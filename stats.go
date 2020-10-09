@@ -16,41 +16,6 @@ type Stats interface{}
 type StatsType string
 
 const (
-	// StatsTypeCodec is used by CodecStats.
-	StatsTypeCodec StatsType = "codec"
-
-	// StatsTypeInboundRTP is used by InboundRTPStreamStats.
-	StatsTypeInboundRTP StatsType = "inbound-rtp"
-
-	// StatsTypeOutboundRTP is used by OutboundRTPStreamStats.
-	StatsTypeOutboundRTP StatsType = "outbound-rtp"
-
-	// StatsTypeRemoteInboundRTP is used by RemoteInboundRTPStreamStats.
-	StatsTypeRemoteInboundRTP StatsType = "remote-inbound-rtp"
-
-	// StatsTypeRemoteOutboundRTP is used by RemoteOutboundRTPStreamStats.
-	StatsTypeRemoteOutboundRTP StatsType = "remote-outbound-rtp"
-
-	// StatsTypeCSRC is used by RTPContributingSourceStats.
-	StatsTypeCSRC StatsType = "csrc"
-
-	// StatsTypePeerConnection used by PeerConnectionStats.
-	StatsTypePeerConnection StatsType = "peer-connection"
-
-	// StatsTypeDataChannel is used by DataChannelStats.
-	StatsTypeDataChannel StatsType = "data-channel"
-
-	// StatsTypeStream is used by MediaStreamStats.
-	StatsTypeStream StatsType = "stream"
-
-	// StatsTypeTrack is used by SenderVideoTrackAttachmentStats and SenderAudioTrackAttachmentStats.
-	StatsTypeTrack StatsType = "track"
-
-	// StatsTypeSender is used by by the AudioSenderStats or VideoSenderStats depending on kind.
-	StatsTypeSender StatsType = "sender"
-
-	// StatsTypeReceiver is used by the AudioReceiverStats or VideoReceiverStats depending on kind.
-	StatsTypeReceiver StatsType = "receiver"
 
 	// StatsTypeTransport is used by TransportStats.
 	StatsTypeTransport StatsType = "transport"
@@ -64,8 +29,7 @@ const (
 	// StatsTypeRemoteCandidate is used by ICECandidateStats for the remote candidate.
 	StatsTypeRemoteCandidate StatsType = "remote-candidate"
 
-	// StatsTypeCertificate is used by CertificateStats.
-	StatsTypeCertificate StatsType = "certificate"
+
 )
 
 // StatsTimestamp is a timestamp represented by the floating point number of
@@ -424,32 +388,4 @@ type ICECandidateStats struct {
 	//
 	// Only defined for local candidates. For remote candidates, this property is not applicable.
 	Deleted bool `json:"deleted"`
-}
-
-// CertificateStats contains information about a certificate used by an ICETransport.
-type CertificateStats struct {
-	// Timestamp is the timestamp associated with this object.
-	Timestamp StatsTimestamp `json:"timestamp"`
-
-	// Type is the object's StatsType
-	Type StatsType `json:"type"`
-
-	// ID is a unique id that is associated with the component inspected to produce
-	// this Stats object. Two Stats objects will have the same ID if they were produced
-	// by inspecting the same underlying object.
-	ID string `json:"id"`
-
-	// Fingerprint is the fingerprint of the certificate.
-	Fingerprint string `json:"fingerprint"`
-
-	// FingerprintAlgorithm is the hash function used to compute the certificate fingerprint. For instance, "sha-256".
-	FingerprintAlgorithm string `json:"fingerprintAlgorithm"`
-
-	// Base64Certificate is the DER-encoded base-64 representation of the certificate.
-	Base64Certificate string `json:"base64Certificate"`
-
-	// IssuerCertificateID refers to the stats object that contains the next certificate
-	// in the certificate chain. If the current certificate is at the end of the chain
-	// (i.e. a self-signed certificate), this will not be set.
-	IssuerCertificateID string `json:"issuerCertificateId"`
 }

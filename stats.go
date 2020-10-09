@@ -763,9 +763,6 @@ type DataChannelStats struct {
 	// TransportID the ID of the TransportStats object for transport used to carry this datachannel.
 	TransportID string `json:"transportId"`
 
-	// State is the "readyState" value of the DataChannel object.
-	State DataChannelState `json:"state"`
-
 	// MessagesSent represents the total number of API "message" events sent.
 	MessagesSent uint32 `json:"messagesSent"`
 

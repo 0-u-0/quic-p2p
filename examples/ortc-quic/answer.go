@@ -14,7 +14,6 @@ const messageSize = 15
 
 func main() {
 
-
 	// This example shows off the experimental implementation of webrtc-quic.
 
 	// Everything below is the Pion WebRTC (ORTC) API! Thanks for using it ❤️.
@@ -87,8 +86,7 @@ func main() {
 	remoteSignal := Signal{}
 	signal.Decode(signal.MustReadStdin(), &remoteSignal)
 
-	iceRole := webrtc.ICERoleControlling
-
+	iceRole := webrtc.ICERoleControlled
 
 	err = ice.SetRemoteCandidates(remoteSignal.ICECandidates)
 	if err != nil {
@@ -107,17 +105,7 @@ func main() {
 		panic(err)
 	}
 
-	var stream *quic.BidirectionalStream
-	stream, err = qt.CreateBidirectionalStream()
-	if err != nil {
-		panic(err)
-	}
 
-	// Handle reading from the stream
-	go ReadLoop(stream)
-
-	// Handle writing to the stream
-	go WriteLoop(stream)
 
 	select {}
 }

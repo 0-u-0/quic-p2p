@@ -1,4 +1,3 @@
-// +build quic
 
 package webrtc
 

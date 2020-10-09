@@ -51,29 +51,11 @@ type DataChannel struct {
 	onBufferedAmountLow func()
 	onErrorHandler      func(error)
 
-	sctpTransport *SCTPTransport
 	dataChannel   *datachannel.DataChannel
 
 	// A reference to the associated api object used by this datachannel
 	api *API
 	log logging.LeveledLogger
-}
-
-// NewDataChannel creates a new DataChannel.
-// This constructor is part of the ORTC API. It is not
-// meant to be used together with the basic WebRTC API.
-func (api *API) NewDataChannel(transport *SCTPTransport, params *DataChannelParameters) (*DataChannel, error) {
-	d, err := api.newDataChannel(params, api.settingEngine.LoggerFactory.NewLogger("ortc"))
-	if err != nil {
-		return nil, err
-	}
-
-	err = d.open(transport)
-	if err != nil {
-		return nil, err
-	}
-
-	return d, nil
 }
 
 // newDataChannel is an internal constructor for the data channel used to
@@ -99,102 +81,6 @@ func (api *API) newDataChannel(params *DataChannelParameters, log logging.Levele
 	}, nil
 }
 
-// open opens the datachannel over the sctp transport
-func (d *DataChannel) open(sctpTransport *SCTPTransport) error {
-	d.mu.Lock()
-	if d.sctpTransport != nil {
-		// already open
-		d.mu.Unlock()
-		return nil
-	}
-	d.sctpTransport = sctpTransport
-
-	if err := d.ensureSCTP(); err != nil {
-		d.mu.Unlock()
-		return err
-	}
-
-	var channelType datachannel.ChannelType
-	var reliabilityParameter uint32
-
-	switch {
-	case d.maxPacketLifeTime == nil && d.maxRetransmits == nil:
-		if d.ordered {
-			channelType = datachannel.ChannelTypeReliable
-		} else {
-			channelType = datachannel.ChannelTypeReliableUnordered
-		}
-
-	case d.maxRetransmits != nil:
-		reliabilityParameter = uint32(*d.maxRetransmits)
-		if d.ordered {
-			channelType = datachannel.ChannelTypePartialReliableRexmit
-		} else {
-			channelType = datachannel.ChannelTypePartialReliableRexmitUnordered
-		}
-	default:
-		reliabilityParameter = uint32(*d.maxPacketLifeTime)
-		if d.ordered {
-			channelType = datachannel.ChannelTypePartialReliableTimed
-		} else {
-			channelType = datachannel.ChannelTypePartialReliableTimedUnordered
-		}
-	}
-
-	cfg := &datachannel.Config{
-		ChannelType:          channelType,
-		Priority:             datachannel.ChannelPriorityNormal,
-		ReliabilityParameter: reliabilityParameter,
-		Label:                d.label,
-		Protocol:             d.protocol,
-		Negotiated:           d.negotiated,
-		LoggerFactory:        d.api.settingEngine.LoggerFactory,
-	}
-
-	if d.id == nil {
-		generatedID, err := d.sctpTransport.generateDataChannelID(d.sctpTransport.dtlsTransport.role())
-		if err != nil {
-			return err
-		}
-
-		d.id = &generatedID
-	}
-
-	dc, err := datachannel.Dial(d.sctpTransport.association, *d.id, cfg)
-	if err != nil {
-		d.mu.Unlock()
-		return err
-	}
-
-	// bufferedAmountLowThreshold and onBufferedAmountLow might be set earlier
-	dc.SetBufferedAmountLowThreshold(d.bufferedAmountLowThreshold)
-	dc.OnBufferedAmountLow(d.onBufferedAmountLow)
-	d.mu.Unlock()
-
-	d.handleOpen(dc)
-	return nil
-}
-
-func (d *DataChannel) ensureSCTP() error {
-	if d.sctpTransport == nil {
-		return errSCTPNotEstablished
-	}
-
-	d.sctpTransport.lock.RLock()
-	defer d.sctpTransport.lock.RUnlock()
-	if d.sctpTransport.association == nil {
-		return errSCTPNotEstablished
-	}
-	return nil
-}
-
-// Transport returns the SCTPTransport instance the DataChannel is sending over.
-func (d *DataChannel) Transport() *SCTPTransport {
-	d.mu.RLock()
-	defer d.mu.RUnlock()
-
-	return d.sctpTransport
-}
 
 // After onOpen is complete check that the user called detach
 // and provide an error message if the call was missed

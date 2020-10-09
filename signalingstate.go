@@ -1,11 +1,5 @@
 package webrtc
 
-import (
-	"fmt"
-
-	"github.com/pion/webrtc/v2/pkg/rtcerr"
-)
-
 type stateChangeOp int
 
 const (
@@ -100,79 +94,5 @@ func (t SignalingState) String() string {
 		return signalingStateClosedStr
 	default:
 		return ErrUnknownType.Error()
-	}
-}
-
-func checkNextSignalingState(cur, next SignalingState, op stateChangeOp, sdpType SDPType) (SignalingState, error) {
-	// Special case for rollbacks
-	if sdpType == SDPTypeRollback && cur == SignalingStateStable {
-		return cur, &rtcerr.InvalidModificationError{
-			Err: fmt.Errorf("can't rollback from stable state"),
-		}
-	}
-
-	// 4.3.1 valid state transitions
-	switch cur {
-	case SignalingStateStable:
-		switch op {
-		case stateChangeOpSetLocal:
-			// stable->SetLocal(offer)->have-local-offer
-			if sdpType == SDPTypeOffer && next == SignalingStateHaveLocalOffer {
-				return next, nil
-			}
-		case stateChangeOpSetRemote:
-			// stable->SetRemote(offer)->have-remote-offer
-			if sdpType == SDPTypeOffer && next == SignalingStateHaveRemoteOffer {
-				return next, nil
-			}
-		}
-	case SignalingStateHaveLocalOffer:
-		if op == stateChangeOpSetRemote {
-			switch sdpType {
-			// have-local-offer->SetRemote(answer)->stable
-			case SDPTypeAnswer:
-				if next == SignalingStateStable {
-					return next, nil
-				}
-			// have-local-offer->SetRemote(pranswer)->have-remote-pranswer
-			case SDPTypePranswer:
-				if next == SignalingStateHaveRemotePranswer {
-					return next, nil
-				}
-			}
-		}
-	case SignalingStateHaveRemotePranswer:
-		if op == stateChangeOpSetRemote && sdpType == SDPTypeAnswer {
-			// have-remote-pranswer->SetRemote(answer)->stable
-			if next == SignalingStateStable {
-				return next, nil
-			}
-		}
-	case SignalingStateHaveRemoteOffer:
-		if op == stateChangeOpSetLocal {
-			switch sdpType {
-			// have-remote-offer->SetLocal(answer)->stable
-			case SDPTypeAnswer:
-				if next == SignalingStateStable {
-					return next, nil
-				}
-			// have-remote-offer->SetLocal(pranswer)->have-local-pranswer
-			case SDPTypePranswer:
-				if next == SignalingStateHaveLocalPranswer {
-					return next, nil
-				}
-			}
-		}
-	case SignalingStateHaveLocalPranswer:
-		if op == stateChangeOpSetLocal && sdpType == SDPTypeAnswer {
-			// have-local-pranswer->SetLocal(answer)->stable
-			if next == SignalingStateStable {
-				return next, nil
-			}
-		}
-	}
-
-	return cur, &rtcerr.InvalidModificationError{
-		Err: fmt.Errorf("invalid proposed signaling state transition %s->%s(%s)->%s", cur, op, sdpType, next),
 	}
 }

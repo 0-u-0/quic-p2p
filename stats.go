@@ -84,10 +84,6 @@ func statsTimestampFrom(t time.Time) StatsTimestamp {
 	return StatsTimestamp(t.UnixNano() / int64(time.Millisecond))
 }
 
-func statsTimestampNow() StatsTimestamp {
-	return statsTimestampFrom(time.Now())
-}
-
 // StatsReport collects Stats objects indexed by their ID.
 type StatsReport map[string]Stats
 
@@ -95,10 +91,6 @@ type statsReportCollector struct {
 	collectingGroup sync.WaitGroup
 	report          StatsReport
 	mux             sync.Mutex
-}
-
-func newStatsReportCollector() *statsReportCollector {
-	return &statsReportCollector{report: make(StatsReport)}
 }
 
 func (src *statsReportCollector) Collecting() {

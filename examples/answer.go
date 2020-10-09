@@ -7,10 +7,8 @@ import (
 	"github.com/pion/quic"
 	"github.com/pion/webrtc/v2"
 
-	"github.com/pion/webrtc/v2/examples/internal/signal"
 )
 
-const messageSize = 15
 
 func main() {
 
@@ -49,10 +47,10 @@ func main() {
 		fmt.Printf("New stream %d\n", stream.StreamID())
 
 		// Handle reading from the stream
-		go ReadLoop(stream)
+		go answerReadLoop(stream)
 
 		// Handle writing to the stream
-		go WriteLoop(stream)
+		go answerWriteLoop(stream)
 	})
 
 	// Gather candidates
@@ -83,9 +81,9 @@ func main() {
 	}
 
 	// Exchange the information
-	fmt.Println(signal.Encode(s))
+	fmt.Println(Encode(s))
 	remoteSignal := Signal{}
-	signal.Decode(signal.MustReadStdin(), &remoteSignal)
+	Decode(MustReadStdin(), &remoteSignal)
 
 	iceRole := webrtc.ICERoleControlled
 
@@ -111,17 +109,8 @@ func main() {
 	select {}
 }
 
-// Signal is used to exchange signaling info.
-// This is not part of the ORTC spec. You are free
-// to exchange this information any way you want.
-type Signal struct {
-	ICECandidates  []webrtc.ICECandidate `json:"iceCandidates"`
-	ICEParameters  webrtc.ICEParameters  `json:"iceParameters"`
-	QuicParameters webrtc.QUICParameters `json:"quicParameters"`
-}
-
 // ReadLoop reads from the stream
-func ReadLoop(s *quic.BidirectionalStream) {
+func answerReadLoop(s *quic.BidirectionalStream) {
 	for {
 		buffer := make([]byte, messageSize)
 		params, err := s.ReadInto(buffer)
@@ -134,7 +123,7 @@ func ReadLoop(s *quic.BidirectionalStream) {
 }
 
 // WriteLoop writes to the stream
-func WriteLoop(s *quic.BidirectionalStream) {
+func answerWriteLoop(s *quic.BidirectionalStream) {
 	for range time.NewTicker(5 * time.Second).C {
 		message := "answer_send"
 		fmt.Printf("Sending %s \n", message)

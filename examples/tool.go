@@ -9,14 +9,23 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/pion/webrtc/v2"
 	"io"
 	"io/ioutil"
 	"os"
 	"strings"
 )
 
+const messageSize = 15
 // Allows compressing offer/answer to bypass terminal input limits.
 const compress = false
+
+
+type Signal struct {
+	ICECandidates  []webrtc.ICECandidate `json:"iceCandidates"`
+	ICEParameters  webrtc.ICEParameters  `json:"iceParameters"`
+	QuicParameters webrtc.QUICParameters `json:"quicParameters"`
+}
 
 // MustReadStdin blocks until input is received from stdin
 func MustReadStdin() string {

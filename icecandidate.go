@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/pion/ice"
-	"github.com/pion/sdp/v2"
 )
 
 // ICECandidate represents a ice candidate
@@ -137,28 +136,4 @@ func (c ICECandidate) String() string {
 		return fmt.Sprintf("%#v failed to convert to ICE: %s", c, err)
 	}
 	return ic.String()
-}
-
-func iceCandidateToSDP(c ICECandidate) sdp.ICECandidate {
-	return sdp.ICECandidate{
-		Foundation:     c.Foundation,
-		Priority:       c.Priority,
-		Address:        c.Address,
-		Protocol:       c.Protocol.String(),
-		Port:           c.Port,
-		Component:      c.Component,
-		Typ:            c.Typ.String(),
-		RelatedAddress: c.RelatedAddress,
-		RelatedPort:    c.RelatedPort,
-	}
-}
-
-// ToJSON returns an ICECandidateInit
-// as indicated by the spec https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-tojson
-func (c ICECandidate) ToJSON() ICECandidateInit {
-	var sdpmLineIndex uint16
-	return ICECandidateInit{
-		Candidate:     fmt.Sprintf("candidate:%s", iceCandidateToSDP(c).Marshal()),
-		SDPMLineIndex: &sdpmLineIndex,
-	}
 }

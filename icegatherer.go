@@ -1,12 +1,11 @@
-// +build !js
 
 package webrtc
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/pion/ice"
-	"github.com/pion/logging"
 )
 
 // ICEGatherer gathers local host, server reflexive and relay
@@ -15,7 +14,6 @@ import (
 // exchanged in signaling.
 type ICEGatherer struct {
 	lock  sync.RWMutex
-	log   logging.LeveledLogger
 	state ICEGathererState
 
 	validatedServers []*ice.URL
@@ -49,7 +47,6 @@ func (api *API) NewICEGatherer(opts ICEGatherOptions) (*ICEGatherer, error) {
 		gatherPolicy:     opts.ICEGatherPolicy,
 		validatedServers: validatedServers,
 		api:              api,
-		log:              api.settingEngine.LoggerFactory.NewLogger("ice"),
 	}, nil
 }
 
@@ -155,7 +152,7 @@ func (g *ICEGatherer) Gather() error {
 		if candidate != nil {
 			c, err := newICECandidateFromICE(candidate)
 			if err != nil {
-				g.log.Warnf("Failed to convert ice.Candidate: %s", err)
+				fmt.Printf("Failed to convert ice.Candidate: %s", err)
 				return
 			}
 			onLocalCandidateHdlr(&c)
@@ -286,7 +283,7 @@ func (g *ICEGatherer) collectStats(collector *statsReportCollector) {
 
 			state, err := toStatsICECandidatePairState(candidatePairStats.State)
 			if err != nil {
-				g.log.Error(err.Error())
+				fmt.Errorf(err.Error())
 			}
 
 			pairID := newICECandidatePairStatsID(candidatePairStats.LocalCandidateID,
@@ -332,12 +329,12 @@ func (g *ICEGatherer) collectStats(collector *statsReportCollector) {
 
 			networkType, err := getNetworkType(candidateStats.NetworkType)
 			if err != nil {
-				g.log.Error(err.Error())
+				fmt.Errorf(err.Error())
 			}
 
 			candidateType, err := getCandidateType(candidateStats.CandidateType)
 			if err != nil {
-				g.log.Error(err.Error())
+				fmt.Errorf(err.Error())
 			}
 
 			stats := ICECandidateStats{
@@ -361,12 +358,12 @@ func (g *ICEGatherer) collectStats(collector *statsReportCollector) {
 			collector.Collecting()
 			networkType, err := getNetworkType(candidateStats.NetworkType)
 			if err != nil {
-				g.log.Error(err.Error())
+				fmt.Errorf(err.Error())
 			}
 
 			candidateType, err := getCandidateType(candidateStats.CandidateType)
 			if err != nil {
-				g.log.Error(err.Error())
+				fmt.Errorf(err.Error())
 			}
 
 			stats := ICECandidateStats{

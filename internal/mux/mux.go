@@ -2,10 +2,10 @@
 package mux
 
 import (
+	"fmt"
 	"net"
 	"sync"
 
-	"github.com/pion/logging"
 	"github.com/pion/transport/packetio"
 )
 
@@ -17,7 +17,6 @@ const maxBufferSize = 1000 * 1000 // 1MB
 type Config struct {
 	Conn          net.Conn
 	BufferSize    int
-	LoggerFactory logging.LoggerFactory
 }
 
 // Mux allows multiplexing
@@ -27,8 +26,6 @@ type Mux struct {
 	endpoints  map[*Endpoint]MatchFunc
 	bufferSize int
 	closedCh   chan struct{}
-
-	log logging.LeveledLogger
 }
 
 // NewMux creates a new Mux
@@ -38,7 +35,6 @@ func NewMux(config Config) *Mux {
 		endpoints:  make(map[*Endpoint]MatchFunc),
 		bufferSize: config.BufferSize,
 		closedCh:   make(chan struct{}),
-		log:        config.LoggerFactory.NewLogger("mux"),
 	}
 
 	go m.readLoop()
@@ -129,9 +125,9 @@ func (m *Mux) dispatch(buf []byte) error {
 
 	if endpoint == nil {
 		if len(buf) > 0 {
-			m.log.Warnf("Warning: mux: no endpoint for packet starting with %d\n", buf[0])
+			fmt.Println("Warning: mux: no endpoint for packet starting with %d\n", buf[0])
 		} else {
-			m.log.Warnf("Warning: mux: no endpoint for zero length packet")
+			fmt.Println("Warning: mux: no endpoint for zero length packet")
 		}
 		return nil
 	}

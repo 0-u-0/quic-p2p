@@ -35,7 +35,7 @@ func main() {
 	}
 
 	// Construct the ICE transport
-	ice := api.NewICETransport(gatherer)
+	ice := webrtc.NewICETransport(gatherer)
 
 	// Construct the Quic transport
 	qt, err := webrtc.NewQUICTransport(ice, nil)

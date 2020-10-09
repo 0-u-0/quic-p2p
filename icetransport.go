@@ -5,11 +5,11 @@ package webrtc
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
 	"github.com/pion/ice"
-	"github.com/pion/logging"
 	"github.com/pion/webrtc/v2/internal/mux"
 )
 
@@ -32,9 +32,6 @@ type ICETransport struct {
 	conn     *ice.Conn
 	mux      *mux.Mux
 
-	loggerFactory logging.LoggerFactory
-
-	log logging.LeveledLogger
 }
 
 // func (t *ICETransport) GetLocalCandidates() []ICECandidate {
@@ -58,11 +55,9 @@ type ICETransport struct {
 // }
 
 // NewICETransport creates a new NewICETransport.
-func NewICETransport(gatherer *ICEGatherer, loggerFactory logging.LoggerFactory) *ICETransport {
+func NewICETransport(gatherer *ICEGatherer) *ICETransport {
 	return &ICETransport{
 		gatherer:      gatherer,
-		loggerFactory: loggerFactory,
-		log:           loggerFactory.NewLogger("ortc"),
 		state:         ICETransportStateNew,
 	}
 }
@@ -98,7 +93,7 @@ func (t *ICETransport) Start(gatherer *ICEGatherer, params ICEParameters, role *
 	if err := agent.OnSelectedCandidatePairChange(func(local, remote ice.Candidate) {
 		candidates, err := newICECandidatesFromICE([]ice.Candidate{local, remote})
 		if err != nil {
-			t.log.Warnf("Unable to convert ICE candidates to ICECandidates: %s", err)
+			fmt.Printf("Unable to convert ICE candidates to ICECandidates: %s", err)
 			return
 		}
 		t.onSelectedCandidatePairChange(NewICECandidatePair(&candidates[0], &candidates[1]))
@@ -144,7 +139,6 @@ func (t *ICETransport) Start(gatherer *ICEGatherer, params ICEParameters, role *
 	config := mux.Config{
 		Conn:          t.conn,
 		BufferSize:    receiveMTU,
-		LoggerFactory: t.loggerFactory,
 	}
 	t.mux = mux.NewMux(config)
 

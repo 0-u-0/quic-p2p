@@ -4,12 +4,6 @@ package webrtc
 
 import "github.com/pion/sdp/v2"
 
-// NewICETransport creates a new NewICETransport.
-// This constructor is part of the ORTC API. It is not
-// meant to be used together with the basic WebRTC API.
-func (api *API) NewICETransport(gatherer *ICEGatherer) *ICETransport {
-	return NewICETransport(gatherer)
-}
 
 func newICECandidateFromSDP(c sdp.ICECandidate) (ICECandidate, error) {
 	typ, err := NewICECandidateType(c.Typ)

@@ -116,9 +116,6 @@ type TransportStats struct {
 	// DTLSTransport's "transport".
 	ICERole ICERole `json:"iceRole"`
 
-	// DTLSState is set to the current value of the "state" attribute of the underlying DTLSTransport.
-	DTLSState DTLSTransportState `json:"dtlsState"`
-
 	// SelectedCandidatePairID is a unique identifier that is associated to the object
 	// that was inspected to produce the ICECandidatePairStats associated with this transport.
 	SelectedCandidatePairID string `json:"selectedCandidatePairId"`

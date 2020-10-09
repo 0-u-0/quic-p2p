@@ -39,7 +39,7 @@ func main() {
 	ice := api.NewICETransport(gatherer)
 
 	// Construct the Quic transport
-	qt, err := api.NewQUICTransport(ice, nil)
+	qt, err := webrtc.NewQUICTransport(ice, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -147,7 +147,7 @@ func ReadLoop(s *quic.BidirectionalStream) {
 // WriteLoop writes to the stream
 func WriteLoop(s *quic.BidirectionalStream) {
 	for range time.NewTicker(5 * time.Second).C {
-		message := signal.RandSeq(messageSize)
+		message := "offer_send"
 		fmt.Printf("Sending %s \n", message)
 
 		data := quic.StreamWriteParameters{

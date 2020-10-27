@@ -1,4 +1,4 @@
-module github.com/pion/webrtc/v2
+module github.com/0-u-0/quic-p2p
 
 go 1.12
 

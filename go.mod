@@ -1,4 +1,4 @@
-module github.com/0-u-0/quic-p2p
+module github.com/0-u-0/quic-p2p/v3
 
 go 1.12
 

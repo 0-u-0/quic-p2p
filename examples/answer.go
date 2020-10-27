@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/0-u-0/quic-p2p/v3"
 	"github.com/pion/quic"
-	"github.com/pion/webrtc/v2"
-
 )
 
 

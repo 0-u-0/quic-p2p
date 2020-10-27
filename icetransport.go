@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/0-u-0/quic-p2p/v3/internal/mux"
 	"github.com/pion/ice"
-	"github.com/pion/webrtc/v2/internal/mux"
 )
 
 // ICETransport allows an application access to information about the ICE

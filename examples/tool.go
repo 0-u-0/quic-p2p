@@ -9,7 +9,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/pion/webrtc/v2"
+	"github.com/0-u-0/quic-p2p/v3"
 	"io"
 	"io/ioutil"
 	"os"

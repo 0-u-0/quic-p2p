@@ -12,8 +12,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/0-u-0/quic-p2p/v3/internal/mux"
 	"github.com/pion/quic"
-	"github.com/pion/webrtc/v2/internal/mux"
 )
 
 // QUICTransport is a specialization of QuicTransportBase focused on
